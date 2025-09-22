@@ -33,6 +33,7 @@ class TaskWidget(QWidget):
                 color: #c084fc;
                 font-size: 13px;
                 spacing: 5px;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
             }
             QCheckBox::indicator {
                 width: 16px;
@@ -56,6 +57,9 @@ class TaskWidget(QWidget):
         # Task label
         self.task_label = QLabel(f"🌙 {self.task_text}")
         self.task_label.setWordWrap(True)
+        self.task_label.setMinimumHeight(20)
+        self.task_label.setMaximumHeight(60)
+        self.task_label.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
         self.update_label_style()
         
         layout.addWidget(self.checkbox)
@@ -78,7 +82,7 @@ class TaskWidget(QWidget):
                     font-size: 13px;
                     background: transparent;
                     text-decoration: line-through;
-                    font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                     font-weight: normal;
                 }
             """)
@@ -88,7 +92,7 @@ class TaskWidget(QWidget):
                     color: #c084fc;
                     font-size: 13px;
                     background: transparent;
-                    font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                     font-weight: normal;
                 }
             """)
@@ -125,7 +129,7 @@ class PixelTodoApp(QWidget):
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
                     stop:0 #1e1b4b, stop:0.3 #312e81, stop:0.7 #4338ca, stop:1 #6366f1);
                 color: #c084fc;
-                font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                 font-size: 11px;
                 font-weight: normal;
             }
@@ -153,7 +157,7 @@ class PixelTodoApp(QWidget):
             padding: 8px 12px;
             margin: 1px;
             border-radius: 8px;
-            font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
         """)
         
         # Date display
@@ -168,7 +172,7 @@ class PixelTodoApp(QWidget):
             padding: 4px 8px;
             margin: 1px;
             border-radius: 6px;
-            font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
         """)
         date_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
@@ -185,7 +189,7 @@ class PixelTodoApp(QWidget):
                 font-weight: bold;
                 font-size: 12px;
                 border-radius: 6px;
-                font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -211,7 +215,7 @@ class PixelTodoApp(QWidget):
                 font-weight: bold;
                 font-size: 12px;
                 border-radius: 6px;
-                font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
             }
             QPushButton:hover {
                 background: rgba(76, 29, 149, 0.8);
@@ -240,7 +244,7 @@ class PixelTodoApp(QWidget):
                 padding: 10px;
                 font-size: 13px;
                 border-radius: 8px;
-                font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                 font-weight: normal;
             }
             QLineEdit:focus {
@@ -265,7 +269,7 @@ class PixelTodoApp(QWidget):
                 font-weight: bold;
                 font-size: 12px;
                 border-radius: 8px;
-                font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
             }
             QPushButton:hover {
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
@@ -288,7 +292,7 @@ class PixelTodoApp(QWidget):
                 border: 2px solid #4c1d95;
                 border-radius: 8px;
                 color: #c084fc;
-                font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                 outline: none;
             }
             QListWidget::item {
@@ -390,7 +394,7 @@ class PixelTodoApp(QWidget):
                                 border: 2px solid #4c1d95;
                                 border-radius: 8px;
                                 color: #c084fc;
-                                font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                                font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                                 outline: none;
                             }}
                             QListWidget::item {{
@@ -440,7 +444,7 @@ class PixelTodoApp(QWidget):
                         border: 2px solid #4c1d95;
                         border-radius: 8px;
                         color: #c084fc;
-                        font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                         outline: none;
                     }
                     QListWidget::item {
@@ -486,18 +490,22 @@ class PixelTodoApp(QWidget):
         self.task_list = CustomListWidget(self, self.background_pixmap)
         
         # Copy properties from old list
-        self.task_list.setGeometry(old_list.geometry())
+        if old_list:
+            self.task_list.setGeometry(old_list.geometry())
         self.task_list.itemDoubleClicked.connect(self.delete_task)
         
         # Replace in layout
         layout = self.layout()
-        for i in range(layout.count()):
-            if layout.itemAt(i).widget() == old_list:
-                layout.removeWidget(old_list)
-                layout.insertWidget(i, self.task_list)
-                break
+        if layout:
+            for i in range(layout.count()):
+                item = layout.itemAt(i)
+                if item and item.widget() == old_list:
+                    layout.removeWidget(old_list)
+                    layout.insertWidget(i, self.task_list)
+                    break
         
-        old_list.deleteLater()
+        if old_list:
+            old_list.deleteLater()
     
     def _apply_fallback_background(self):
         """Apply fallback CSS background pattern"""
@@ -515,7 +523,7 @@ class PixelTodoApp(QWidget):
                         border: 2px solid #4c1d95;
                         border-radius: 8px;
                         color: #c084fc;
-                        font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
+                        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                         outline: none;
                     }}
                     QListWidget::item {{
@@ -583,7 +591,12 @@ class PixelTodoApp(QWidget):
             
             # Create list item
             item = QListWidgetItem()
-            item.setSizeHint(task_widget.sizeHint())
+            # Calculate proper size hint for the task widget
+            size_hint = task_widget.sizeHint()
+            # Ensure minimum height for text visibility
+            if size_hint.height() < 30:
+                size_hint.setHeight(30)
+            item.setSizeHint(size_hint)
             
             # Add to list
             self.task_list.addItem(item)
