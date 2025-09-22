@@ -1,10 +1,58 @@
 [
   {
-    "text": "hello",
-    "completed": true
+    "text": "breakfast",
+    "completed": false
   },
   {
-    "text": "latifa",
-    "completed": true
+    "text": "study",
+    "completed": false
+  },
+  {
+    "text": "lunch",
+    "completed": false
+  },
+  {
+    "text": "h",
+    "completed": false
+  },
+  {
+    "text": "g",
+    "completed": false
+  },
+  {
+    "text": "f",
+    "completed": false
+  },
+  {
+    "text": "f",
+    "completed": false
+  },
+  {
+    "text": "d",
+    "completed": false
+  },
+  {
+    "text": "s",
+    "completed": false
+  },
+  {
+    "text": "s",
+    "completed": false
+  },
+  {
+    "text": "a",
+    "completed": false
+  },
+  {
+    "text": "a",
+    "completed": false
+  },
+  {
+    "text": "a",
+    "completed": false
+  },
+  {
+    "text": "a",
+    "completed": false
   }
 ]

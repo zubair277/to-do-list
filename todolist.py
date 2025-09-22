@@ -4,7 +4,7 @@ import os
 from datetime import datetime
 from PyQt6.QtWidgets import (QApplication, QWidget, QVBoxLayout, QHBoxLayout, 
                              QLineEdit, QPushButton, QListWidget, QListWidgetItem, 
-                             QLabel, QCheckBox, QMessageBox)
+                             QLabel, QCheckBox, QMessageBox, QGraphicsDropShadowEffect)
 from PyQt6.QtCore import Qt, QPoint, pyqtSignal
 from PyQt6.QtGui import QFont, QFontDatabase, QPixmap, QPainter, QPen, QIcon, QColor
 
@@ -20,6 +20,36 @@ class TaskWidget(QWidget):
     
     def init_ui(self):
         """Initialize the task widget UI"""
+        # Helper to fetch colors from the top-level window palette safely
+        def palette_color(name, default):
+            try:
+                win = self.window()
+                colors = getattr(win, 'colors', None)
+                if isinstance(colors, dict) and name in colors:
+                    return colors[name]
+            except Exception:
+                pass
+            return default
+
+        self._palette_color = palette_color
+        
+        # Pastel card background for each task
+        self.setStyleSheet(f"""
+            QWidget {{
+                background: qlineargradient(x1:0, y1:0, x2:1, y2:1,
+                    stop:0 {self._palette_color('lavender', '#D9B8F2')},
+                    stop:1 {self._palette_color('pink', '#F7BFD0')});
+                border: 1px solid rgba(196, 154, 133, 0.5);
+                border-radius: 12px;
+            }}
+        """)
+
+        # Subtle glow effect; intensify on hover via enter/leave events
+        self._glow = QGraphicsDropShadowEffect(self)
+        self._glow.setBlurRadius(10)
+        self._glow.setOffset(0, 2)
+        self._glow.setColor(QColor(self._palette_color('sky', '#B8D8FF')))
+        self.setGraphicsEffect(self._glow)
         layout = QHBoxLayout(self)
         layout.setContentsMargins(5, 3, 5, 3)
         layout.setSpacing(8)
@@ -27,35 +57,35 @@ class TaskWidget(QWidget):
         # Checkbox for task completion
         self.checkbox = QCheckBox()
         self.checkbox.setChecked(self.completed)
-        self.checkbox.setStyleSheet("""
-            QCheckBox {
+        self.checkbox.setStyleSheet(f"""
+            QCheckBox {{
                 background: transparent;
-                color: #c084fc;
+                color: {self._palette_color('taskText', '#F5F3EF')};
                 font-size: 13px;
                 spacing: 5px;
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-            }
-            QCheckBox::indicator {
-                width: 16px;
-                height: 16px;
-                border: 2px solid #7c3aed;
-                background-color: rgba(30, 27, 75, 0.8);
-                border-radius: 6px;
-            }
-            QCheckBox::indicator:checked {
-                background-color: #7c3aed;
-                border-color: #8b5cf6;
-                image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTIiIHZpZXdCb3g9IjAgMCAxMiAxMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEwIDNMNC41IDguNUwyIDYiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+Cjwvc3ZnPgo=);
-            }
-            QCheckBox::indicator:hover {
-                border-color: #a855f7;
-                background-color: rgba(120, 58, 237, 0.6);
-            }
+            }}
+            QCheckBox::indicator {{
+                width: 18px;
+                height: 18px;
+                border: 2px solid {self._palette_color('brown', '#C49A85')};
+                background-color: {self._palette_color('cream', '#FFFDF7')};
+                border-radius: 9px;
+            }}
+            QCheckBox::indicator:checked {{
+                background-color: {self._palette_color('lavender', '#D9B8F2')};
+                border-color: {self._palette_color('brown', '#C49A85')};
+                image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTYiIGhlaWdodD0iMTYiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTEyIDJMMTQuOTQyIDguODI0N0gyMi4xODZMMTYuMzkyIDEyLjk1MkwxOC45NDIgMjAuMTc1TDEyIDE1Ljc3MUw1LjA1NzcgMjAuMTc1TDcuNjA4NyAxMi45NTJMMC44MTM5NSA4LjgyNDdINy4wNTc4TDEyIDJaIiBmaWxsPSIjRkZGN0ZFIi8+Cjwvc3ZnPgo=);
+            }}
+            QCheckBox::indicator:hover {{
+                border-color: {self._palette_color('yellow', '#FBE89B')};
+                background-color: {self._palette_color('pink', '#F7BFD0')};
+            }}
         """)
         self.checkbox.stateChanged.connect(self.toggle_completion)
         
         # Task label
-        self.task_label = QLabel(f"🌙 {self.task_text}")
+        self.task_label = QLabel(f"🐰 {self.task_text}")
         self.task_label.setWordWrap(True)
         self.task_label.setMinimumHeight(20)
         self.task_label.setMaximumHeight(60)
@@ -66,6 +96,16 @@ class TaskWidget(QWidget):
         layout.addWidget(self.task_label, 1)  # Give label full space
         
         self.setLayout(layout)
+
+    def enterEvent(self, event):
+        if hasattr(self, '_glow'):
+            self._glow.setBlurRadius(18)
+        super().enterEvent(event)
+
+    def leaveEvent(self, event):
+        if hasattr(self, '_glow'):
+            self._glow.setBlurRadius(10)
+        super().leaveEvent(event)
     
     def toggle_completion(self, state):
         """Toggle task completion status"""
@@ -76,25 +116,25 @@ class TaskWidget(QWidget):
     def update_label_style(self):
         """Update label style based on completion status"""
         if self.completed:
-            self.task_label.setStyleSheet("""
-                QLabel {
-                    color: #f8fafc;
+            self.task_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {self._palette_color('taskTextCompleted', '#8A776E')};
                     font-size: 13px;
                     background: transparent;
                     text-decoration: line-through;
                     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                     font-weight: normal;
-                }
+                }}
             """)
         else:
-            self.task_label.setStyleSheet("""
-                QLabel {
-                    color: #c084fc;
+            self.task_label.setStyleSheet(f"""
+                QLabel {{
+                    color: {self._palette_color('taskText', '#4A3B34')};
                     font-size: 13px;
                     background: transparent;
                     font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                     font-weight: normal;
-                }
+                }}
             """)
     
     def get_task_data(self):
@@ -109,6 +149,21 @@ class PixelTodoApp(QWidget):
         super().__init__()
         self.tasks_file = "pixel_todo_tasks.json"
         self.drag_position = QPoint()
+        self._allow_close = False
+        # Pastel theme palette
+        self.colors = {
+            "grass": "#B8E2A8",       # soft grass green
+            "brown": "#C49A85",       # warm brown (borders/accents)
+            "cream": "#FFFDF7",       # creamy white (base)
+            "yellow": "#FBE89B",      # gentle yellow (accent/hover)
+            "pink": "#F7BFD0",        # pastel pink (accent)
+            "lavender": "#D9B8F2",    # light lavender (accent)
+            "sky": "#B8D8FF",        # sky blue (accent)
+            "textDark": "#4A3B34",    # darker brown for readable text
+            "textMuted": "#6B5A52",    # muted brown/gray for secondary
+            "taskText": "#F5F3EF",    # soft white for task text
+            "taskTextCompleted": "#E8E3DC"  # softer white for completed
+        }
         self.init_ui()
         self.load_tasks()
         
@@ -118,21 +173,19 @@ class PixelTodoApp(QWidget):
         self.setWindowTitle("🌙 Nighttime To-Do")
         self.setFixedSize(340, 480)  # Slightly larger for better spacing
         
-        # Make window frameless and always on top
-        self.setWindowFlags(Qt.WindowType.FramelessWindowHint | 
-                           Qt.WindowType.WindowStaysOnTopHint |
-                           Qt.WindowType.Tool)
+        # Use a normal window type for stability on macOS
+        self.setWindowFlags(Qt.WindowType.Window)
         
-        # Set nighttime mountain themed background
-        self.setStyleSheet("""
-            QWidget {
+        # Soft pastel meadow background and base text color
+        self.setStyleSheet(f"""
+            QWidget {{
                 background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 #1e1b4b, stop:0.3 #312e81, stop:0.7 #4338ca, stop:1 #6366f1);
-                color: #c084fc;
+                    stop:0 {self.colors['cream']}, stop:0.5 {self.colors['grass']}, stop:1 {self.colors['pink']});
+                color: {self.colors['textDark']};
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                 font-size: 11px;
                 font-weight: normal;
-            }
+            }}
         """)
         
         # Position window in bottom-right corner
@@ -146,14 +199,14 @@ class PixelTodoApp(QWidget):
         # Header with title and buttons
         header_layout = QHBoxLayout()
         
-        title_label = QLabel("🌙 Latifa's Tasks ⭐")
-        title_label.setStyleSheet("""
-            color: #f8fafc;
+        title_label = QLabel("🐰 Latifa's Tasks 🐻")
+        title_label.setStyleSheet(f"""
+            color: {self.colors['textDark']};
             font-weight: bold;
             font-size: 18px;
             background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                stop:0 rgba(139, 92, 246, 0.3), stop:1 rgba(236, 72, 153, 0.3));
-            border: 2px solid #7c3aed;
+                stop:0 {self.colors['yellow']}, stop:1 {self.colors['pink']});
+            border: 2px solid {self.colors['brown']};
             padding: 8px 12px;
             margin: 1px;
             border-radius: 8px;
@@ -162,13 +215,13 @@ class PixelTodoApp(QWidget):
         
         # Date display
         today = datetime.now().strftime("%B %d, %Y")
-        date_label = QLabel(f"⭐ {today}")
-        date_label.setStyleSheet("""
-            color: #c084fc;
+        date_label = QLabel(f"🌼 {today}")
+        date_label.setStyleSheet(f"""
+            color: {self.colors['textMuted']};
             font-weight: normal;
             font-size: 10px;
-            background: rgba(30, 27, 75, 0.7);
-            border: 1px solid #4c1d95;
+            background: {self.colors['cream']};
+            border: 1px solid {self.colors['brown']};
             padding: 4px 8px;
             margin: 1px;
             border-radius: 6px;
@@ -177,55 +230,53 @@ class PixelTodoApp(QWidget):
         date_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         
         # Clear completed tasks button
-        clear_button = QPushButton("✨")
+        clear_button = QPushButton("🧹")
         clear_button.setFixedSize(24, 24)
         clear_button.setToolTip("Clear completed tasks")
-        clear_button.setStyleSheet("""
-            QPushButton {
+        clear_button.setStyleSheet(f"""
+            QPushButton {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(139, 92, 246, 0.4), stop:1 rgba(236, 72, 153, 0.4));
-                border: 2px solid #7c3aed;
-                color: #f8fafc;
+                    stop:0 {self.colors['lavender']}, stop:1 {self.colors['pink']});
+                border: 2px solid {self.colors['brown']};
+                color: {self.colors['textDark']};
                 font-weight: bold;
                 font-size: 12px;
                 border-radius: 6px;
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(139, 92, 246, 0.6), stop:1 rgba(236, 72, 153, 0.6));
-                border-color: #8b5cf6;
-            }
-            QPushButton:pressed {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(139, 92, 246, 0.8), stop:1 rgba(236, 72, 153, 0.8));
-            }
+            }}
+            QPushButton:hover {{
+                background: {self.colors['yellow']};
+                border-color: {self.colors['brown']};
+            }}
+            QPushButton:pressed {{
+                background: {self.colors['lavender']};
+            }}
         """)
         clear_button.clicked.connect(self.clear_completed_tasks)
         
         # Close button
-        close_button = QPushButton("🌙")
+        close_button = QPushButton("🌸")
         close_button.setFixedSize(24, 24)
         close_button.setToolTip("Close application")
-        close_button.setStyleSheet("""
-            QPushButton {
-                background: rgba(30, 27, 75, 0.8);
-                border: 2px solid #4c1d95;
-                color: #c084fc;
+        close_button.setStyleSheet(f"""
+            QPushButton {{
+                background: {self.colors['cream']};
+                border: 2px solid {self.colors['brown']};
+                color: {self.colors['textDark']};
                 font-weight: bold;
                 font-size: 12px;
                 border-radius: 6px;
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-            }
-            QPushButton:hover {
-                background: rgba(76, 29, 149, 0.8);
-                border-color: #7c3aed;
-            }
-            QPushButton:pressed {
-                background: rgba(124, 58, 237, 0.8);
-            }
+            }}
+            QPushButton:hover {{
+                background: {self.colors['yellow']};
+                border-color: {self.colors['brown']};
+            }}
+            QPushButton:pressed {{
+                background: {self.colors['pink']};
+            }}
         """)
-        close_button.clicked.connect(self.close)
+        close_button.clicked.connect(self.safe_close)
         
         header_layout.addWidget(title_label)
         header_layout.addWidget(date_label)
@@ -236,101 +287,97 @@ class PixelTodoApp(QWidget):
         # Input field for new tasks
         self.task_input = QLineEdit()
         self.task_input.setPlaceholderText("Enter new task... 🌙")
-        self.task_input.setStyleSheet("""
-            QLineEdit {
-                background: rgba(30, 27, 75, 0.8);
-                border: 2px solid #4c1d95;
-                color: #c084fc;
+        self.task_input.setStyleSheet(f"""
+            QLineEdit {{
+                background: {self.colors['cream']};
+                border: 2px solid {self.colors['brown']};
+                color: {self.colors['textDark']};
                 padding: 10px;
                 font-size: 13px;
                 border-radius: 8px;
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                 font-weight: normal;
-            }
-            QLineEdit:focus {
-                border-color: #7c3aed;
-                background: rgba(76, 29, 149, 0.6);
-            }
-            QLineEdit::placeholder {
-                color: rgba(192, 132, 252, 0.6);
-            }
+            }}
+            QLineEdit:focus {{
+                border-color: {self.colors['lavender']};
+                background: {self.colors['yellow']};
+            }}
+            QLineEdit::placeholder {{
+                color: {self.colors['textMuted']};
+            }}
         """)
         self.task_input.returnPressed.connect(self.add_task)
         
         # Add button
-        add_button = QPushButton("⭐ ADD TASK ⭐")
-        add_button.setStyleSheet("""
-            QPushButton {
+        add_button = QPushButton("⭐ Add Task ⭐")
+        add_button.setStyleSheet(f"""
+            QPushButton {{
                 background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(139, 92, 246, 0.4), stop:1 rgba(236, 72, 153, 0.4));
-                color: #f8fafc;
-                border: 2px solid #7c3aed;
+                    stop:0 {self.colors['grass']}, stop:1 {self.colors['lavender']});
+                color: {self.colors['textDark']};
+                border: 2px solid {self.colors['brown']};
                 padding: 10px;
                 font-weight: bold;
                 font-size: 12px;
                 border-radius: 8px;
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(139, 92, 246, 0.6), stop:1 rgba(236, 72, 153, 0.6));
-                border-color: #8b5cf6;
-            }
-            QPushButton:pressed {
-                background: qlineargradient(x1:0, y1:0, x2:1, y2:0,
-                    stop:0 rgba(139, 92, 246, 0.8), stop:1 rgba(236, 72, 153, 0.8));
-            }
+            }}
+            QPushButton:hover {{
+                background: {self.colors['yellow']};
+                border-color: {self.colors['brown']};
+            }}
+            QPushButton:pressed {{
+                background: {self.colors['pink']};
+            }}
         """)
         add_button.clicked.connect(self.add_task)
         
         # Task list widget
         self.task_list = QListWidget()
-        self.task_list.setStyleSheet("""
-            QListWidget {
-                background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                    stop:0 rgba(30, 27, 75, 0.9), stop:0.5 rgba(67, 56, 202, 0.7), stop:1 rgba(30, 27, 75, 0.9));
-                border: 2px solid #4c1d95;
+        self.task_list.setStyleSheet(f"""
+            QListWidget {{
+                background: transparent;
+                border: 2px solid {self.colors['brown']};
                 border-radius: 8px;
-                color: #c084fc;
+                color: {self.colors['textDark']};
                 font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                 outline: none;
-            }
-            QListWidget::item {
-                background: rgba(30, 27, 75, 0.6);
-                border: 1px solid rgba(124, 58, 237, 0.5);
-                margin: 2px;
-                padding: 2px;
-                border-radius: 6px;
-                color: #c084fc;
+            }}
+            QListWidget::item {{
+                background: transparent;
+                border: none;
+                margin: 6px 4px;
+                padding: 0px;
+                border-radius: 12px;
+                color: {self.colors['textDark']};
                 font-size: 13px;
                 font-weight: normal;
-            }
-            QListWidget::item:hover {
-                background: rgba(76, 29, 149, 0.7);
-                border-color: #7c3aed;
-            }
-            QListWidget::item:selected {
-                background: rgba(124, 58, 237, 0.6);
-                border-color: #8b5cf6;
-            }
+            }}
+            QListWidget::item:hover {{
+                background: transparent;
+            }}
+            QListWidget::item:selected {{
+                background: transparent;
+                border: none;
+            }}
         """)
         
         # Set background image
         self.set_background_image()
         
-        # Add double-click to delete functionality
-        self.task_list.itemDoubleClicked.connect(self.delete_task)
+        # Optional: disable double-click delete to avoid accidental closures
+        # self.task_list.itemDoubleClicked.connect(self.delete_task)
         
         # Task counter
         self.task_counter = QLabel("⭐ 0 tasks total")
-        self.task_counter.setStyleSheet("""
-            color: #f8fafc;
+        self.task_counter.setStyleSheet(f"""
+            color: {self.colors['textDark']};
             font-size: 11px;
             font-weight: bold;
             margin-top: 4px;
             font-family: 'Segoe UI', 'Tahoma', 'Verdana', sans-serif;
-            background: rgba(30, 27, 75, 0.8);
-            border: 1px solid #4c1d95;
+            background: {self.colors['cream']};
+            border: 1px solid {self.colors['brown']};
             padding: 6px;
             border-radius: 6px;
         """)
@@ -512,37 +559,34 @@ class PixelTodoApp(QWidget):
         self.task_list.setStyleSheet(f"""
                     QListWidget {{
                         background: qlineargradient(x1:0, y1:0, x2:0, y2:1,
-                            stop:0 rgba(30, 27, 75, 0.9), stop:0.3 rgba(67, 56, 202, 0.7), 
-                            stop:0.7 rgba(99, 102, 241, 0.5), stop:1 rgba(30, 27, 75, 0.9)),
-                            radial-gradient(circle at 20% 20%, rgba(248, 250, 252, 0.1) 1px, transparent 1px),
-                            radial-gradient(circle at 80% 40%, rgba(192, 132, 252, 0.15) 1px, transparent 1px),
-                            radial-gradient(circle at 30% 70%, rgba(248, 250, 252, 0.08) 1px, transparent 1px),
-                            radial-gradient(circle at 90% 80%, rgba(139, 92, 246, 0.12) 1px, transparent 1px),
-                            radial-gradient(circle at 60% 30%, rgba(248, 250, 252, 0.1) 1px, transparent 1px);
-                        background-size: 100% 100%, 60px 60px, 80px 80px, 50px 50px, 70px 70px, 90px 90px;
-                        border: 2px solid #4c1d95;
+                            stop:0 {self.colors['cream']}, stop:0.5 {self.colors['grass']}, stop:1 {self.colors['lavender']}),
+                            radial-gradient(circle at 20% 20%, rgba(247, 191, 208, 0.25) 2px, transparent 2px),
+                            radial-gradient(circle at 80% 40%, rgba(217, 184, 242, 0.25) 2px, transparent 2px),
+                            radial-gradient(circle at 30% 70%, rgba(251, 232, 155, 0.25) 2px, transparent 2px);
+                        background-size: 100% 100%, 60px 60px, 80px 80px, 70px 70px;
+                        border: 2px solid {self.colors['brown']};
                         border-radius: 8px;
-                        color: #c084fc;
+                        color: {self.colors['textDark']};
                         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Helvetica Neue', Arial, sans-serif;
                         outline: none;
                     }}
                     QListWidget::item {{
-                        background: rgba(30, 27, 75, 0.8);
-                        border: 1px solid rgba(124, 58, 237, 0.5);
+                        background: rgba(255, 253, 247, 0.8);
+                        border: 1px solid rgba(196, 154, 133, 0.7);
                         margin: 2px;
                         padding: 2px;
                         border-radius: 6px;
-                        color: #c084fc;
+                        color: {self.colors['textDark']};
                         font-size: 13px;
                         font-weight: normal;
                     }}
                     QListWidget::item:hover {{
-                        background: rgba(76, 29, 149, 0.8);
-                        border-color: #7c3aed;
+                        background: {self.colors['yellow']};
+                        border-color: {self.colors['brown']};
                     }}
                     QListWidget::item:selected {{
-                        background: rgba(124, 58, 237, 0.7);
-                        border-color: #8b5cf6;
+                        background: {self.colors['lavender']};
+                        border-color: {self.colors['brown']};
                     }}
                 """)
     
@@ -586,7 +630,7 @@ class PixelTodoApp(QWidget):
         """Create a task item with checkbox functionality"""
         try:
             # Create custom task widget
-            task_widget = TaskWidget(task_text, completed)
+            task_widget = TaskWidget(task_text, completed, self)
             task_widget.task_changed.connect(self.on_task_changed)
             
             # Create list item
@@ -748,11 +792,21 @@ class PixelTodoApp(QWidget):
     def closeEvent(self, event):
         """Save tasks when closing the application"""
         try:
+            # Prevent accidental closes; only allow when explicitly requested
+            if not self._allow_close:
+                event.ignore()
+                self.show()
+                return
             self.save_tasks()
             event.accept()
         except Exception as e:
             print(f"Error during close: {e}")
             event.accept()  # Still close even if save fails
+
+    def safe_close(self):
+        """Allow closing explicitly via close button"""
+        self._allow_close = True
+        self.close()
     
     def keyPressEvent(self, event):
         """Handle keyboard shortcuts"""
